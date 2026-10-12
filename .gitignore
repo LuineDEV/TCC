@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Local configuration and credentials
+.env
+
+# Runtime data and generated artifacts
+cache/
+models/
+output/
+tmp/
+data/email_images/
+data/*.json
+docs/superpowers/
+
+# IDE and operating system files
+.vscode/
+.idea/
+Thumbs.db
+.DS_Store

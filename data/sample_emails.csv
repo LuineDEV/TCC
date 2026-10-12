@@ -1,0 +1,49 @@
+sender,subject,body,category
+gerencia@empresa.com,Reunião de alinhamento,Precisamos revisar o andamento do projeto amanhã às 10h e definir os responsáveis pelas próximas entregas.,Trabalho
+rh@empresa.com,Atualização cadastral,Favor preencher o formulário interno de atualização cadastral até sexta-feira.,Trabalho
+cliente@empresa.com,Proposta comercial,Segue a proposta revisada para avaliação e retorno com observações do contrato.,Trabalho
+financeiro@empresa.com,Relatório mensal,O relatório financeiro do mês foi anexado para análise da equipe.,Trabalho
+coordenacao@faculdade.edu,Entrega do trabalho,A data final para envio do relatório acadêmico foi mantida para segunda-feira.,Trabalho
+suporte@empresa.com,Acesso ao sistema,Seu chamado foi registrado e será analisado pela equipe técnica responsável.,Trabalho
+equipe@empresa.com,Planejamento da sprint,Vamos priorizar as tarefas pendentes e estimar os pontos da próxima sprint.,Trabalho
+professor@faculdade.edu,Orientação TCC,Podemos marcar uma conversa para revisar o escopo e os objetivos específicos do TCC.,Trabalho
+alerta@banco.com,Pagamento urgente,Identificamos uma cobrança com vencimento hoje. Regularize o pagamento para evitar bloqueio.,Urgente
+seguranca@servico.com,Tentativa de login,Foi detectada uma tentativa de acesso incomum na sua conta. Verifique imediatamente.,Urgente
+hospital@clinica.com,Consulta antecipada,Sua consulta foi antecipada para hoje às 14h. Confirme presença com urgência.,Urgente
+chefia@empresa.com,Problema crítico em produção,O sistema apresentou falha crítica e precisamos de resposta imediata da equipe.,Urgente
+condominio@predio.com,Vazamento no apartamento,Foi informado um vazamento próximo à sua unidade. Entre em contato com a administração agora.,Urgente
+cartao@banco.com,Compra suspeita,Uma compra de alto valor foi identificada no seu cartão. Confirme se reconhece a transação.,Urgente
+secretaria@faculdade.edu,Prazo final de matrícula,O prazo final para regularização da matrícula termina hoje às 18h.,Urgente
+monitoria@faculdade.edu,Avaliação reagendada,A avaliação foi reagendada para amanhã pela manhã e a presença é obrigatória.,Urgente
+mae@email.com,Almoço de domingo,Vamos almoçar em família no domingo. Me avise se você vai conseguir chegar cedo.,Pessoal
+amigo@email.com,Futebol no sábado,O pessoal combinou uma partida no sábado à tarde e depois vamos pedir pizza.,Pessoal
+loja@compras.com,Pedido enviado,Seu pedido foi despachado e deve chegar nos próximos dias pelo serviço de entrega.,Pessoal
+streaming@servico.com,Nova temporada disponível,A nova temporada da série que você acompanha já está disponível no catálogo.,Pessoal
+academia@bairro.com,Aula experimental,Estamos oferecendo uma aula experimental gratuita nesta semana para novos alunos.,Pessoal
+viagens@companhia.com,Promoção de passagens,Encontramos ofertas de passagens para o destino que você pesquisou recentemente.,Pessoal
+irma@email.com,Aniversário da família,Não esqueça de confirmar presença no aniversário no próximo fim de semana.,Pessoal
+newsletter@tecnologia.com,Resumo semanal,Veja as principais novidades de tecnologia publicadas nesta semana.,Pessoal
+diretoria@empresa.com,Aprovação de orçamento,Precisamos validar o orçamento do projeto antes da reunião com a diretoria.,Trabalho
+projetos@empresa.com,Status da entrega,Atualize o status das tarefas concluídas e informe os bloqueios do desenvolvimento.,Trabalho
+compras@empresa.com,Cotação de fornecedores,Envie a comparação das propostas recebidas para seguirmos com a compra corporativa.,Trabalho
+treinamento@empresa.com,Capacitação obrigatória,A equipe deverá concluir o treinamento interno de segurança da informação nesta semana.,Trabalho
+juridico@empresa.com,Revisão contratual,O documento do contrato precisa ser revisado antes do envio ao cliente.,Trabalho
+operacoes@empresa.com,Escala da equipe,A escala de atendimento foi atualizada para cobrir o plantão de sexta-feira.,Trabalho
+secretaria@empresa.com,Reserva de sala,A sala de reuniões foi reservada para a apresentação do planejamento trimestral.,Trabalho
+gestao@empresa.com,Indicadores do trimestre,Os indicadores de produtividade devem ser consolidados até o fim do expediente.,Trabalho
+alerta@servidor.com,Servidor fora do ar,O monitoramento identificou indisponibilidade total do serviço principal. Ação imediata necessária.,Urgente
+seguranca@banco.com,Bloqueio preventivo,Sua conta foi bloqueada preventivamente após atividade suspeita. Regularize o acesso agora.,Urgente
+emergencia@clinica.com,Resultado crítico,O exame apresentou resultado que exige contato médico imediato. Retorne a ligação assim que possível.,Urgente
+administracao@predio.com,Evacuação preventiva,Haverá evacuação preventiva do bloco devido a ocorrência elétrica. Saia do local imediatamente.,Urgente
+financeiro@empresa.com,Nota vencida,A nota fiscal pendente vence hoje e precisa ser regularizada para evitar multa.,Urgente
+suporte@empresa.com,Incidente de segurança,Um incidente de segurança foi aberto com prioridade máxima e requer análise urgente.,Urgente
+faculdade@uva.br,Último prazo de envio,O sistema aceitará a entrega final apenas até hoje às 23h59.,Urgente
+transporte@servico.com,Alteração imediata de embarque,Seu embarque foi alterado para um horário mais cedo. Confirme a alteração com urgência.,Urgente
+pai@email.com,Jantar em casa,Vamos preparar um jantar simples hoje à noite se você puder passar aqui.,Pessoal
+amiga@email.com,Cinema amanhã,Comprei os ingressos para o cinema amanhã e te mando o horário certinho.,Pessoal
+loja@mercado.com,Cupom de desconto,Você recebeu um cupom de desconto para usar na próxima compra online.,Pessoal
+musica@app.com,Playlist nova,Criamos uma playlist com músicas parecidas com as que você ouviu recentemente.,Pessoal
+viagem@email.com,Roteiro das férias,Separei algumas ideias de passeios para a viagem do próximo mês.,Pessoal
+familia@email.com,Fotos do encontro,Enviei as fotos do encontro de família no fim de semana passado.,Pessoal
+assinatura@revista.com,Edição disponível,A nova edição da revista digital já pode ser acessada na sua conta.,Pessoal
+delivery@app.com,Pedido entregue,Seu pedido foi entregue com sucesso. Avalie sua experiência no aplicativo.,Pessoal
