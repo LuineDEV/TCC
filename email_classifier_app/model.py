@@ -12,13 +12,11 @@ from sklearn.metrics import accuracy_score, classification_report
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
 
-from .config import DATA_DIR, MODEL_DIR, ensure_directories
+from .config import ensure_directories
 from .nlp import clean_text, strip_accents
+from .labels import CATEGORIES, DEFAULT_MODEL_PATH, DEFAULT_TRAINING_CSV
 
 
-DEFAULT_MODEL_PATH = MODEL_DIR / "email_classifier.joblib"
-DEFAULT_TRAINING_CSV = DATA_DIR / "sample_emails.csv"
-CATEGORIES = ("Urgente", "Trabalho", "Pessoal")
 MODEL_VERSION = 2
 
 URGENT_PATTERNS = (
@@ -77,6 +75,7 @@ def build_feature_text(sender: str, subject: str, body: str, ocr_text: str) -> s
 class PredictionResult:
     category: str
     confidence: float
+    source: str = "model"
 
 
 @dataclass
@@ -148,7 +147,7 @@ class EmailClassifier:
             raise ValueError("A base de treino precisa ter pelo menos 2 categorias diferentes.")
 
         category_counts = frame["category"].value_counts()
-        self.pipeline = Pipeline(
+        pipeline = Pipeline(
             steps=[
                 (
                     "tfidf",
@@ -172,16 +171,20 @@ class EmailClassifier:
                 random_state=42,
                 stratify=frame["category"],
             )
-            self.pipeline.fit(x_train, y_train)
-            predictions = self.pipeline.predict(x_test)
+            pipeline.fit(x_train, y_train)
+            predictions = pipeline.predict(x_test)
             accuracy: float | None = accuracy_score(y_test, predictions)
             report = classification_report(y_test, predictions, zero_division=0)
         else:
-            self.pipeline.fit(frame["text"], frame["category"])
             accuracy = None
             report = "Base pequena ou desbalanceada; validação separada não realizada."
 
-        joblib.dump({"version": MODEL_VERSION, "pipeline": self.pipeline}, self.model_path)
+        # Evaluate on held-out data first, then learn all reviewed examples.
+        # Keep the working model untouched if fitting or persistence fails.
+        pipeline.fit(frame["text"], frame["category"])
+        self.model_path.parent.mkdir(parents=True, exist_ok=True)
+        joblib.dump({"version": MODEL_VERSION, "pipeline": pipeline}, self.model_path)
+        self.pipeline = pipeline
         return TrainingResult(
             accuracy=accuracy,
             report=report,
@@ -221,14 +224,14 @@ class EmailClassifier:
         sender_text = strip_accents(str(sender or "").lower())
         content = clean_text(f"{subject}\n{body[:2000]}\n{ocr_text[:2000]}")
         if any(pattern in content for pattern in URGENT_PATTERNS):
-            return PredictionResult("Urgente", 0.96)
+            return PredictionResult("Urgente", 0.96, "rule")
         if "urgente" in content and any(term in content for term in ("hoje", "prazo", "bloqueio", "seguranca")):
-            return PredictionResult("Urgente", 0.91)
+            return PredictionResult("Urgente", 0.91, "rule")
         if any(pattern in sender_text for pattern in WORK_SENDER_PATTERNS):
-            return PredictionResult("Trabalho", 0.96)
+            return PredictionResult("Trabalho", 0.96, "rule")
         work_score = sum(1 for term in WORK_TERMS if term in content)
         if work_score >= 2:
-            return PredictionResult("Trabalho", min(0.94, 0.82 + work_score * 0.03))
+            return PredictionResult("Trabalho", min(0.94, 0.82 + work_score * 0.03), "rule")
         if any(pattern in sender_text for pattern in PERSONAL_SENDER_PATTERNS):
-            return PredictionResult("Pessoal", 0.90)
+            return PredictionResult("Pessoal", 0.90, "rule")
         return None

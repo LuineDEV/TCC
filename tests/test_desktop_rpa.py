@@ -1,4 +1,5 @@
 import pytest
+from threading import Event
 
 from email_classifier_app.desktop_rpa import DesktopGmailError, DesktopGmailImporter, PyAutoGuiGmailReader
 from email_classifier_app.gmail_rpa import GmailMessage
@@ -66,6 +67,24 @@ def test_desktop_importer_skips_broken_message_and_continues():
     assert reader.recoveries == 1
     assert importer.failure_count == 1
     assert any("ignorada" in message.lower() for message in progress)
+
+
+def test_desktop_importer_stops_after_current_message_and_keeps_completed_messages():
+    stop_event = Event()
+
+    class StopsAfterFirstMessage(FakeDesktopReader):
+        def read_message(self, index: int) -> GmailMessage:
+            message = super().read_message(index)
+            stop_event.set()
+            return message
+
+    reader = StopsAfterFirstMessage()
+    importer = DesktopGmailImporter(max_messages=10, reader=reader, stop_event=stop_event)
+    messages = importer.import_inbox()
+
+    assert len(messages) == 1
+    assert importer.cancelled is True
+    assert reader.finished is True
 
 
 class AlwaysBrokenReader(FakeDesktopReader):
@@ -222,7 +241,7 @@ class OrderedCapture:
     def __init__(self, events: list[str]) -> None:
         self.events = events
 
-    def capture(self, name, region, scroll_point):
+    def capture(self, name, region, scroll_point, stop_event=None):
         self.events.append("capture")
         return CaptureResult(None, "Somente texto", 1)
 

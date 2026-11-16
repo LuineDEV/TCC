@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from pathlib import Path
+from threading import Event
 
 import numpy as np
 from PIL import Image
@@ -113,6 +114,7 @@ class ScrollableCapture:
         name: str,
         region: tuple[int, int, int, int],
         scroll_point: tuple[int, int],
+        stop_event: Event | None = None,
     ) -> CaptureResult:
         self.output_dir.mkdir(parents=True, exist_ok=True)
         frames = [self.gui.screenshot(region=region).convert("RGB")]
@@ -121,13 +123,24 @@ class ScrollableCapture:
         reason = "Limite de seguranca atingido."
         self.gui.moveTo(*scroll_point, duration=0.1)
 
+        cancelled = False
         while len(frames) < self.max_frames:
+            if stop_event is not None and stop_event.is_set():
+                cancelled = True
+                status = "Interrompida"
+                reason = "Captura interrompida pelo usuario."
+                break
             press = getattr(self.gui, "press", None)
             if callable(press):
                 press("pagedown")
             else:
                 self.gui.scroll(self.scroll_amount)
             self.gui.sleep(self.settle_seconds)
+            if stop_event is not None and stop_event.is_set():
+                cancelled = True
+                status = "Interrompida"
+                reason = "Captura interrompida pelo usuario."
+                break
             current = self.gui.screenshot(region=region).convert("RGB")
             if image_difference(frames[-1], current) <= 1.5:
                 if unchanged == 0 and callable(press):
@@ -147,7 +160,7 @@ class ScrollableCapture:
             frames.append(current)
 
         stitched = stitch_frames(frames, self.max_height)
-        if stitched.height >= self.max_height and status != "Completa":
+        if stitched.height >= self.max_height and status not in ("Completa", "Interrompida"):
             reason = "Limite de altura atingido."
         path = self.output_dir / f"{name}.png"
         stitched.save(path, format="PNG", optimize=True)

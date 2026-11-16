@@ -53,6 +53,8 @@ class CaptureGui:
         self.keys.append(key)
 
     def sleep(self, seconds):
+        if hasattr(self, "on_sleep"):
+            self.on_sleep()
         return None
 
 
@@ -81,6 +83,22 @@ def test_scroll_capture_marks_result_partial_at_safety_limit(tmp_path: Path):
     assert result.status == "Parcial"
     assert result.frame_count == 3
     assert "limite" in result.reason.lower()
+
+
+def test_scroll_capture_honors_cancellation_and_saves_partial_image(tmp_path: Path):
+    from threading import Event
+
+    stop_event = Event()
+    frame = striped_image(180)
+    gui = CaptureGui([frame, frame])
+    gui.on_sleep = stop_event.set
+    capture = ScrollableCapture(gui=gui, output_dir=tmp_path)
+
+    result = capture.capture("cancelled", region=(0, 0, 120, 180), scroll_point=(60, 100),
+                             stop_event=stop_event)
+
+    assert result.status == "Interrompida"
+    assert Path(result.image_path).exists()
 
 
 class FakeOcrResult:

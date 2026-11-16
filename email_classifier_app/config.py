@@ -14,6 +14,7 @@ EMAIL_IMAGE_DIR = CACHE_DIR / "email_images"
 
 
 def load_env_file(path: Path | None = None) -> None:
+    explicit_path = path is not None
     env_path = path or BASE_DIR / ".env"
     if not env_path.exists():
         return
@@ -23,7 +24,12 @@ def load_env_file(path: Path | None = None) -> None:
         if not line or line.startswith("#") or "=" not in line:
             continue
         key, value = line.split("=", 1)
-        os.environ.setdefault(key.strip(), value.strip().strip('"').strip("'"))
+        key = key.strip()
+        value = value.strip().strip('"').strip("'")
+        if explicit_path:
+            os.environ[key] = value
+        else:
+            os.environ.setdefault(key, value)
 
 
 @dataclass(frozen=True)
@@ -33,6 +39,29 @@ class DatabaseSettings:
     user: str
     password: str
     database: str
+
+
+@dataclass(frozen=True)
+class ImapAccountSettings:
+    host: str
+    port: int
+    username: str
+    password: str
+    folder: str
+    limit: int
+
+
+def get_imap_account_settings(path: Path | None = None) -> ImapAccountSettings:
+    """Read the private local account settings from .env once at startup."""
+    load_env_file(path)
+    return ImapAccountSettings(
+        host=os.getenv("IMAP_HOST", "imap.kinghost.net"),
+        port=int(os.getenv("IMAP_PORT", "993")),
+        username=os.getenv("IMAP_USERNAME", ""),
+        password=os.getenv("IMAP_PASSWORD", ""),
+        folder=os.getenv("IMAP_FOLDER", "INBOX"),
+        limit=int(os.getenv("IMAP_LIMIT", "20")),
+    )
 
 
 def get_database_settings() -> DatabaseSettings:

@@ -5,6 +5,7 @@ from datetime import datetime
 from pathlib import Path
 import re
 from typing import Protocol
+from threading import Event
 from uuid import uuid4
 
 from .config import EMAIL_IMAGE_DIR
@@ -39,13 +40,16 @@ class DesktopGmailImporter:
         max_messages: int = 10,
         reader: DesktopGmailReader | None = None,
         progress_callback: ProgressCallback | None = None,
+        stop_event: Event | None = None,
     ) -> None:
         if max_messages < 1:
             raise ValueError("O limite de mensagens deve ser maior que zero.")
         self.max_messages = max_messages
         self.reader = reader or PyAutoGuiGmailReader()
         self.progress_callback = progress_callback or (lambda _message: None)
+        self.stop_event = stop_event or Event()
         self.failure_count = 0
+        self.cancelled = False
         self.failure_messages: list[str] = []
 
     def import_inbox(self) -> list[GmailMessage]:
@@ -54,8 +58,12 @@ class DesktopGmailImporter:
         self.failure_count = 0
         self.failure_messages = []
         messages: list[GmailMessage] = []
+        self.cancelled = False
         try:
             for index in range(self.max_messages):
+                if self.stop_event.is_set():
+                    self.cancelled = True
+                    break
                 self.progress_callback(f"Lendo mensagem {index + 1} de {self.max_messages}...")
                 try:
                     messages.append(self.reader.read_message(index))
@@ -70,7 +78,7 @@ class DesktopGmailImporter:
                         recovery()
         finally:
             self.reader.finish()
-        if not messages:
+        if not messages and not self.cancelled:
             raise DesktopGmailError(
                 "Nenhuma mensagem pode ser lida. Confirme que o Gmail esta na Caixa de entrada e tente novamente."
             )
@@ -80,7 +88,7 @@ class DesktopGmailImporter:
 class PyAutoGuiGmailReader:
     """Leitor de tela para o Gmail em portugues, maximizado e com zoom de 100%."""
 
-    def __init__(self, gui=None, clipboard=None, window_manager=None, capture=None, ocr=None) -> None:
+    def __init__(self, gui=None, clipboard=None, window_manager=None, capture=None, ocr=None, stop_event=None) -> None:
         if gui is None or clipboard is None or window_manager is None:
             try:
                 import pyautogui
@@ -101,6 +109,7 @@ class PyAutoGuiGmailReader:
         self.window = None
         self.capture = capture or ScrollableCapture(self.gui, EMAIL_IMAGE_DIR)
         self.ocr = ocr or LocalOcr()
+        self.stop_event = stop_event or Event()
 
     def prepare_inbox(self) -> None:
         if self.width < 1280 or self.height < 720:
@@ -108,6 +117,7 @@ class PyAutoGuiGmailReader:
         self._focus_chrome()
         self.gui.hotkey("ctrl", "0")
         self.gui.sleep(0.5)
+        self._check_cancelled()
 
     def read_message(self, index: int) -> GmailMessage:
         row_x = int(self.width * 0.55)
@@ -117,6 +127,7 @@ class PyAutoGuiGmailReader:
 
         self.gui.click(row_x, row_y)
         self.gui.sleep(1.4)
+        self._check_cancelled()
         opened_message = False
         capture_result = None
         try:
@@ -124,6 +135,7 @@ class PyAutoGuiGmailReader:
                 self._capture_name(index),
                 region=self._message_region(),
                 scroll_point=self._scroll_point(),
+                stop_event=self.stop_event,
             )
             copied_text = self._copy_open_message()
             opened_message = self._looks_like_open_message(copied_text)
@@ -132,7 +144,7 @@ class PyAutoGuiGmailReader:
             message = self._message_from_clipboard(copied_text, index + 1)
             ocr_text = ""
             ocr_status = "Sem texto detectado"
-            if capture_result.image_path:
+            if capture_result.image_path and not self.stop_event.is_set():
                 try:
                     ocr_text = self.ocr.extract(capture_result.image_path)
                     ocr_status = "Concluido" if ocr_text else "Sem texto detectado"
@@ -200,6 +212,10 @@ class PyAutoGuiGmailReader:
         if not copied_text:
             raise DesktopGmailError("Nao foi possivel copiar o conteudo do e-mail aberto.")
         return copied_text
+
+    def _check_cancelled(self) -> None:
+        if self.stop_event.is_set():
+            raise DesktopGmailError("Varredura do Gmail interrompida pelo usuario.")
 
     def _return_to_inbox(self) -> None:
         self.gui.hotkey("alt", "left")

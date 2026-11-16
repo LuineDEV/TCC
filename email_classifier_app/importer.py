@@ -18,10 +18,13 @@ class EmailRecord:
     ocr_text: str = ""
     capture_status: str = "Somente texto"
     ocr_status: str = "Nao executado"
+    source_key: str | None = None
+    category_source: str = "automatic"
+    decision_method: str = "unknown"
 
 
 def load_emails_from_csv(path: str | Path) -> list[EmailRecord]:
-    frame = pd.read_csv(path)
+    frame = pd.read_csv(path, keep_default_na=False)
     required = {"subject", "body"}
     missing = required.difference(frame.columns)
     if missing:
@@ -35,8 +38,10 @@ def load_emails_from_csv(path: str | Path) -> list[EmailRecord]:
                 sender=str(row.get("sender", "")),
                 subject=str(row.get("subject", "")),
                 body=str(row.get("body", "")),
-                received_at=None if pd.isna(row.get("received_at", None)) else str(row.get("received_at")),
-                category=None if pd.isna(row.get("category", None)) else row.get("category"),
+                received_at=str(row.get("received_at", "")).strip() or None,
+                category=str(row.get("category", "")).strip() or None,
+                category_source="imported" if str(row.get("category", "")).strip() else "automatic",
+                decision_method="imported" if str(row.get("category", "")).strip() else "unknown",
             )
         )
     return records
