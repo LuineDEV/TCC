@@ -124,6 +124,8 @@ O [protocolo experimental](docs/protocolo_experimental.md) descreve os critério
 Para reproduzir o piloto no ambiente preparado acima:
 
 ```powershell
+.\.venv\Scripts\python.exe -m pip install "scikit-learn==1.8.0" "numpy==2.4.1" "scipy==1.17.1"
+.\.venv\Scripts\python.exe -m nltk.downloader stopwords
 .\.venv\Scripts\python.exe -m email_classifier_app.evaluation data/avaliacao_piloto.csv --output output/avaliacao_piloto.json
 ```
 

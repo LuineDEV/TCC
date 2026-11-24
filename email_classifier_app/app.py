@@ -49,6 +49,7 @@ class EmailClassifierApp(ctk.CTk):
         self.classifier = None
         self.classifier_ready = False
         self.startup_events: Queue[tuple[str, object]] = Queue()
+        self.startup_error: str | None = None
         self.closing = False
         self.email_total = 0
         self.filtered_total = 0
@@ -171,7 +172,7 @@ class EmailClassifierApp(ctk.CTk):
                        self.gmail_button, self.import_button):
             button.configure(state=state)
         if self.demo_dir is not None:
-            self.imap_top_button.configure(state="disabled")
+            self.imap_top_button.grid_remove()
             self.imap_button.configure(text="Importar CSV", command=self.import_csv, state=state)
         self.gmail_stop_button.configure(
             state="normal" if enabled and self.gmail_import_running else "disabled"
@@ -519,6 +520,7 @@ class EmailClassifierApp(ctk.CTk):
                     self._set_actions_enabled(True)
                     self._set_status("Pronto para importar e revisar mensagens", success=True)
                 elif event == "startup_error":
+                    self.startup_error = str(payload)
                     self._remove_loading_state()
                     self._set_status("Modelo indisponível. Use Ações para tentar novamente.", success=False)
                     self.action_button.configure(state="normal")

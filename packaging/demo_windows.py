@@ -17,7 +17,7 @@ def main() -> None:
             def check_startup() -> None:
                 if app.classifier_ready:
                     app._close_window()
-                elif monotonic() >= deadline:
+                elif app.startup_error or monotonic() >= deadline:
                     app._close_window()
                 else:
                     app.after(100, check_startup)
@@ -25,6 +25,9 @@ def main() -> None:
             app.after(100, check_startup)
             app.mainloop()
             if not app.classifier_ready:
+                (Path.cwd() / "maildesk-smoke-error.txt").write_text(
+                    app.startup_error or "Tempo de inicialização excedido.", encoding="utf-8"
+                )
                 raise SystemExit(1)
         return
     base = Path(os.getenv("LOCALAPPDATA") or Path.home())
