@@ -1,0 +1,19 @@
+MAIL DESK | DEMONSTRAÇÃO PARA AVALIAÇÃO
+Luís Felipe Costa Pedro | Ciência da Computação | UVA
+
+1. Extraia o ZIP inteiro em uma pasta local do Windows 64 bits.
+2. Abra MailDesk.exe. Mantenha a pasta _internal junto ao executável.
+3. Em Ações, selecione Carregar exemplos.
+4. Clique em Importar CSV e selecione demonstracao_sem_rotulo.csv.
+   O seletor também oferece uma cópia desse CSV na pasta de dados.
+5. Abra Projeto pessoal de pintura e confira o motivo da previsão.
+6. Selecione Pessoal e clique em Salvar categoria.
+7. Em Ações, use Treinar com rótulos revisados. Depois, use
+   Classificar previsões e confira a manutenção da categoria manual.
+8. Feche e reabra o Mail Desk para verificar a persistência.
+
+A demonstração inclui Python e suas dependências. Usa dados sintéticos e
+armazena suas mensagens e modelo em %LOCALAPPDATA%\MailDeskTCC\Demonstracao.
+O código-fonte oferece acesso por IMAP, MySQL e a coleta legada do Gmail.
+
+Repositório: https://github.com/LuineDEV/TCC

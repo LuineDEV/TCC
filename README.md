@@ -1,6 +1,17 @@
-# Organizador de E-mails Desktop
+# Mail Desk | Organizador de E-mails Desktop
 
 Protótipo acadêmico para TCC com foco em classificação local de e-mails usando NLP, TF-IDF, Scikit-Learn e armazenamento local.
+
+## Entrega para avaliação
+
+A [versão de avaliação](https://github.com/LuineDEV/TCC/releases/tag/entrega-tcc-2026-11) reúne a demonstração portátil para Windows 64 bits, o vídeo, a monografia em PDF e os resultados do experimento piloto. O acesso exige uma conta com permissão no repositório privado.
+
+1. Baixe `MailDesk_Demo_Windows_x64.zip`, extraia todo o conteúdo e abra `MailDesk.exe`. Mantenha a pasta `_internal` junto ao executável.
+2. Em **Ações**, clique em **Carregar exemplos**. Depois, use **Importar CSV** e escolha `demonstracao_sem_rotulo.csv`, incluído com o executável.
+3. Abra **Projeto pessoal de pintura**. Confira a classificação automática e o motivo exibido. Mude a categoria para **Pessoal** e clique em **Salvar categoria**.
+4. Use **Ações → Treinar com rótulos revisados**. Execute **Classificar previsões** e confirme a preservação da categoria manual. Feche e reabra para verificar a persistência.
+
+O modo portátil usa JSON e grava sua base e seu modelo separadamente em `%LOCALAPPDATA%\MailDeskTCC\Demonstracao`. O pacote inclui o Python e as dependências do fluxo local por CSV. A execução pelo código-fonte disponibiliza também IMAP, Gmail legado e MySQL.
 
 ## Funcionalidades
 
@@ -14,7 +25,7 @@ Protótipo acadêmico para TCC com foco em classificação local de e-mails usan
 - Filtros por categoria e correção manual da classificação.
 - Retreinamento com os e-mails salvos localmente, incluindo correções manuais.
 
-## Importação do Gmail
+## Importação de e-mails pelo código-fonte
 
 ### Coleta recomendada: IMAP (KingHost)
 
@@ -32,7 +43,7 @@ Não é necessário apagar dados antigos: eles são preservados, mas exemplos an
 
 ### Coleta anterior: Gmail por tela (legado)
 
-O botão **Importar do Gmail** usa a janela do Google Chrome que já está aberta e autenticada pelo usuário. Antes de iniciar a leitura, deixe o Gmail aberto na Caixa de Entrada, com a janela maximizada e zoom em 100%.
+**Ações → Importar do Gmail antigo** usa a janela do Google Chrome que já está aberta e autenticada pelo usuário. Antes de iniciar a leitura, deixe o Gmail aberto na Caixa de Entrada, com a janela maximizada e zoom em 100%.
 
 A coleta abre até 10 mensagens da primeira página da Caixa de Entrada, copia o conteúdo visível e classifica automaticamente os registros importados. Durante a coleta, não use o mouse ou o teclado. O protótipo usa automação assistida de tela e não envia, exclui ou arquiva mensagens.
 
@@ -49,7 +60,7 @@ Para importação, `category` é opcional. Quando a coluna `category` existe, el
 
 ## Aprendizado com correções
 
-O botão **Treinar modelo** usa os e-mails que já estão salvos na aplicação. Assim, o fluxo fica:
+**Ações → Treinar com rótulos revisados** usa os e-mails rotulados que já estão salvos na aplicação. Assim, o fluxo fica:
 
 ```text
 Importar e-mails -> corrigir categorias na tela -> Treinar modelo -> modelo salvo
@@ -57,7 +68,7 @@ Importar e-mails -> corrigir categorias na tela -> Treinar modelo -> modelo salv
 
 As categorias corrigidas manualmente entram na próxima rodada de treinamento. O novo modelo é salvo em `models/email_classifier.joblib` e será usado nas próximas execuções do aplicativo.
 
-Somente categorias revisadas pelo usuário (com **Salvar categoria**) ou fornecidas em CSV rotulado entram no treino. Previsões automáticas e registros antigos sem origem de rótulo são excluídos para evitar reforçar erros. É necessário revisar pelo menos seis exemplos em duas categorias. **Classificar** preserva rótulos manuais e de CSV.
+Somente categorias revisadas pelo usuário (com **Salvar categoria**) ou fornecidas em CSV rotulado entram no treino. Previsões automáticas e registros antigos sem origem de rótulo são excluídos para evitar reforçar erros. A base de treino precisa ter pelo menos seis exemplos em duas categorias. **Ações → Classificar previsões** preserva rótulos manuais e de CSV.
 
 ## Configuração do MySQL
 
@@ -79,7 +90,7 @@ Se o MySQL não estiver disponível, o aplicativo entra em modo de demonstraçã
 
 ## Como executar
 
-No Windows, prepare o ambiente na pasta do projeto:
+No Windows, prepare o ambiente na pasta do projeto. A entrega foi testada com Python 3.12:
 
 ```powershell
 python -m venv .venv
@@ -107,5 +118,15 @@ Para executar os testes automatizados:
 ```
 
 ## Escopo acadêmico
+
+O [protocolo experimental](docs/protocolo_experimental.md) descreve os critérios de rotulação, as partições, a comparação antes/depois do lote de revisão e a execução reproduzível com a base sintética.
+
+Para reproduzir o piloto no ambiente preparado acima:
+
+```powershell
+.\.venv\Scripts\python.exe -m email_classifier_app.evaluation data/avaliacao_piloto.csv --output output/avaliacao_piloto.json
+```
+
+O resultado registra métricas, matrizes de confusão e previsões por ID em 15 mensagens de teste. A base inteira tem 48 mensagens sintéticas. Na configuração híbrida, incluir o lote de revisão simulada mudou o F1 macro de 0,655 para 0,603. A rodada confirmatória com uma partição inédita e revisão humana registrada é uma etapa distinta.
 
 Este projeto é um protótipo de classificação e visualização local de e-mails. Ele não pretende substituir um cliente completo de e-mail, nem implementar resposta automática ou resumo de mensagens como funcionalidades principais.

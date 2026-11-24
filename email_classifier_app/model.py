@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import tempfile
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -35,6 +36,7 @@ URGENT_PATTERNS = (
     "evacuacao preventiva",
     "vazamento",
 )
+NORMALIZED_URGENT_PATTERNS = tuple(clean_text(pattern) for pattern in URGENT_PATTERNS)
 WORK_SENDER_PATTERNS = ("jobalerts", "job-alert", "jobs-noreply", "infojobs", "vagas.com", "gupy")
 WORK_TERMS = (
     "vaga", "estagio", "desenvolvedor", "developer", "engineer", "reuniao",
@@ -71,11 +73,34 @@ def build_feature_text(sender: str, subject: str, body: str, ocr_text: str) -> s
     )
 
 
+def build_text_pipeline(classifier=None) -> Pipeline:
+    return Pipeline(
+        steps=[
+            (
+                "tfidf",
+                TfidfVectorizer(
+                    preprocessor=clean_text,
+                    lowercase=False,
+                    ngram_range=(1, 2),
+                    min_df=1,
+                ),
+            ),
+            (
+                "classifier",
+                classifier if classifier is not None else LogisticRegression(
+                    max_iter=1000, class_weight="balanced"
+                ),
+            ),
+        ]
+    )
+
+
 @dataclass
 class PredictionResult:
     category: str
     confidence: float
     source: str = "model"
+    detail: str = ""
 
 
 @dataclass
@@ -147,20 +172,7 @@ class EmailClassifier:
             raise ValueError("A base de treino precisa ter pelo menos 2 categorias diferentes.")
 
         category_counts = frame["category"].value_counts()
-        pipeline = Pipeline(
-            steps=[
-                (
-                    "tfidf",
-                    TfidfVectorizer(
-                        preprocessor=clean_text,
-                        lowercase=False,
-                        ngram_range=(1, 2),
-                        min_df=1,
-                    ),
-                ),
-                ("classifier", LogisticRegression(max_iter=1000, class_weight="balanced")),
-            ]
-        )
+        pipeline = build_text_pipeline()
 
         can_validate = len(frame) >= 10 and category_counts.min() >= 2
         if can_validate:
@@ -183,7 +195,10 @@ class EmailClassifier:
         # Keep the working model untouched if fitting or persistence fails.
         pipeline.fit(frame["text"], frame["category"])
         self.model_path.parent.mkdir(parents=True, exist_ok=True)
-        joblib.dump({"version": MODEL_VERSION, "pipeline": pipeline}, self.model_path)
+        with tempfile.TemporaryDirectory(dir=self.model_path.parent) as directory:
+            temporary_model = Path(directory) / self.model_path.name
+            joblib.dump({"version": MODEL_VERSION, "pipeline": pipeline}, temporary_model)
+            temporary_model.replace(self.model_path)
         self.pipeline = pipeline
         return TrainingResult(
             accuracy=accuracy,
@@ -207,31 +222,49 @@ class EmailClassifier:
         if self.pipeline is None:
             self.ensure_model()
 
-        assert self.pipeline is not None
+        pipeline = self.pipeline
+        assert pipeline is not None
         text = build_feature_text(sender, subject, body, ocr_text)
-        category = str(self.pipeline.predict([text])[0])
-        confidence = 0.0
-
-        classifier = self.pipeline.named_steps.get("classifier")
-        if hasattr(classifier, "predict_proba"):
-            probabilities = classifier.predict_proba(self.pipeline.named_steps["tfidf"].transform([text]))[0]
-            confidence = float(max(probabilities))
-
-        return PredictionResult(category=category, confidence=confidence)
+        vectorizer = pipeline.named_steps["tfidf"]
+        classifier = pipeline.named_steps["classifier"]
+        vector = vectorizer.transform([text])
+        probabilities = classifier.predict_proba(vector)[0]
+        predicted = int(probabilities.argmax())
+        runner_up = max((i for i in range(len(probabilities)) if i != predicted), key=probabilities.__getitem__)
+        if len(probabilities) == 2 and classifier.coef_.shape[0] == 1:
+            weights = classifier.coef_[0] * (1 if predicted == 1 else -1)
+        else:
+            weights = classifier.coef_[predicted] - classifier.coef_[runner_up]
+        contributions = vector.data * weights[vector.indices]
+        names = vectorizer.get_feature_names_out()
+        strongest = [
+            str(names[vector.indices[i]])
+            for i in sorted(range(len(contributions)), key=contributions.__getitem__, reverse=True)
+            if contributions[i] > 0 and len(names[vector.indices[i]]) <= 48
+        ][:3]
+        detail = "Termos que favoreceram a previsão: " + ", ".join(strongest) if strongest else ""
+        return PredictionResult(str(classifier.classes_[predicted]), float(probabilities[predicted]), detail=detail)
 
     @staticmethod
     def _predict_with_rules(sender: str, subject: str, body: str, ocr_text: str) -> PredictionResult | None:
         sender_text = strip_accents(str(sender or "").lower())
         content = clean_text(f"{subject}\n{body[:2000]}\n{ocr_text[:2000]}")
-        if any(pattern in content for pattern in URGENT_PATTERNS):
-            return PredictionResult("Urgente", 0.96, "rule")
-        if "urgente" in content and any(term in content for term in ("hoje", "prazo", "bloqueio", "seguranca")):
-            return PredictionResult("Urgente", 0.91, "rule")
+        for pattern, normalized in zip(URGENT_PATTERNS, NORMALIZED_URGENT_PATTERNS, strict=True):
+            if normalized in content:
+                return PredictionResult("Urgente", 0.96, "rule", f"Expressão de urgência: “{pattern}”.")
+        if "urgente" in content:
+            for term in ("hoje", "prazo", "bloqueio", "seguranca"):
+                if term in content:
+                    return PredictionResult("Urgente", 0.91, "rule", f"“urgente” junto de “{term}”.")
         if any(pattern in sender_text for pattern in WORK_SENDER_PATTERNS):
-            return PredictionResult("Trabalho", 0.96, "rule")
-        work_score = sum(1 for term in WORK_TERMS if term in content)
+            return PredictionResult("Trabalho", 0.96, "rule", "Padrão de remetente associado a vagas.")
+        work_matches = [term for term in WORK_TERMS if term in content]
+        work_score = len(work_matches)
         if work_score >= 2:
-            return PredictionResult("Trabalho", min(0.94, 0.82 + work_score * 0.03), "rule")
+            return PredictionResult(
+                "Trabalho", min(0.94, 0.82 + work_score * 0.03), "rule",
+                "Vocabulário profissional: " + ", ".join(work_matches[:3]),
+            )
         if any(pattern in sender_text for pattern in PERSONAL_SENDER_PATTERNS):
-            return PredictionResult("Pessoal", 0.90, "rule")
+            return PredictionResult("Pessoal", 0.90, "rule", "Padrão de remetente associado a consumo ou lazer.")
         return None

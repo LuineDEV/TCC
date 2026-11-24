@@ -1,0 +1,49 @@
+id,grupo,particao,sender,subject,body,category
+T01,credencial-vazada,treino,seguranca@exemplo.invalid,Tentativa de login,Verifique imediatamente a sessão desconhecida na sua conta.,Urgente
+T02,oxigenio,treino,plantao@exemplo.invalid,Alarme do cilindro,Pressão caiu abaixo do limite. Troque o cilindro antes da próxima aplicação.,Urgente
+T03,pagamento-guia,treino,contas@exemplo.invalid,Guia vence hoje,Sem pagamento até as 17h o atendimento será cancelado.,Urgente
+T04,indisponibilidade,treino,operacao@exemplo.invalid,Servidor fora do ar,Incidente de segurança. O serviço está indisponível e precisa de intervenção.,Urgente
+T05,portao-travado,treino,portaria@exemplo.invalid,Portão travado com moradores dentro,Solicite socorro agora. A saída de pedestres está bloqueada.,Urgente
+T06,carteira-perdida,treino,amigo@exemplo.invalid,Documento encontrado no terminal,Retire a carteira em vinte minutos antes do encerramento do balcão.,Urgente
+T07,orcamento-feira,treino,compras@exemplo.invalid,Orçamento de estandes,O fornecedor enviou três opções para a equipe avaliar na próxima semana.,Trabalho
+T08,vaga-frontend,treino,jobalerts@exemplo.invalid,Vaga de desenvolvedor,Confira os requisitos e inscreva seu currículo quando puder.,Trabalho
+T09,aula-orientacao,treino,faculdade@exemplo.invalid,Orientação TCC,Envie o capítulo revisado para conferência no próximo encontro.,Trabalho
+T10,comite,treino,secretaria@exemplo.invalid,Agenda do comitê,As atas e o material da reunião estão disponíveis na pasta compartilhada.,Trabalho
+T11,contrato-energia,treino,juridico@exemplo.invalid,Minuta do contrato,A equipe recebeu o parecer preliminar para discutir no próximo mês.,Trabalho
+T12,manual-editorial,treino,editora@exemplo.invalid,Atualização do manual editorial,As instruções para submissão de artigos mudaram neste semestre.,Trabalho
+T13,ferias,treino,familia@exemplo.invalid,Roteiro das férias,Separei trilhas e pousadas para nossa viagem em julho.,Pessoal
+T14,cinema,treino,amiga@exemplo.invalid,Sessão de cinema no sábado,Comprei dois ingressos para o filme e podemos jantar depois.,Pessoal
+T15,cupons,treino,ofertas@shopee.example,Cupom da semana,Veja a promoção de utensílios sem compromisso de compra.,Pessoal
+T16,musica,treino,amigo@exemplo.invalid,Recomendações de música,Montei uma playlist com discos brasileiros para ouvir no feriado.,Pessoal
+T17,aniversario,treino,prima@exemplo.invalid,Festa da Júlia,A comemoração de aniversário será na casa da avó no domingo.,Pessoal
+T18,esporte,treino,clube@exemplo.invalid,Corrida do bairro,As fotos da prova foram publicadas no álbum do grupo.,Pessoal
+V01,cerco-incendio,validacao,brigada@exemplo.invalid,Evacuação preventiva,Utilize a rota sinalizada e saia do prédio imediatamente.,Urgente
+V02,matricula-bloqueio,validacao,registro@exemplo.invalid,Última janela de matrícula,Sem confirmação nesta hora a vaga curricular será perdida.,Urgente
+V03,progresso-equipe,validacao,tecnologia@exemplo.invalid,Resumo do sprint,Consolidamos o relatório de entregas para a próxima reunião da equipe.,Trabalho
+V04,congresso,validacao,eventos@exemplo.invalid,Convite para banca técnica,O colegiado pediu indicação de avaliadores para o congresso científico.,Trabalho
+V05,horta,validacao,vizinha@exemplo.invalid,Mudas para a horta,Trouxe sementes de manjericão e deixei um vaso na sua varanda.,Pessoal
+V06,cafe,validacao,colega@exemplo.invalid,Café com o pessoal da escola,Os amigos marcaram um café para lembrar os tempos da turma.,Pessoal
+R01,risco-quimico,revisao,laboratorio@exemplo.invalid,Interrompa a atividade,Sensor acusou concentração perigosa. Isole a área e acione o responsável agora.,Urgente
+R02,medicamento,revisao,familia@exemplo.invalid,Dose em falta,Precisamos da medicação nesta hora para evitar a interrupção do tratamento.,Urgente
+R03,julgamento,revisao,secretaria@exemplo.invalid,Encerramento da janela de recurso,Protocolar em quinze minutos é indispensável para evitar indeferimento.,Urgente
+R04,oficina-estagio,revisao,formacao@exemplo.invalid,Cronograma de capacitação,Reserve um horário para a oficina institucional do próximo trimestre.,Trabalho
+R05,protocolo-academico,revisao,coordenacao@exemplo.invalid,Parecer sobre o currículo,O colegiado disponibilizou a nova grade para análise dos docentes.,Trabalho
+R06,fatura-servico,revisao,financeiro@exemplo.invalid,Fechamento de serviços,Planilha de reembolso autorizada para conferência no próximo ciclo.,Trabalho
+R07,venda-promocional,revisao,loja@exemplo.invalid,Oferta relâmpago de luminárias,O desconto termina em poucas horas. A compra é opcional.,Pessoal
+R08,passeio,revisao,amiga@exemplo.invalid,Trilha na serra,Combinei o passeio com os vizinhos para o fim do mês.,Pessoal
+R09,caderno-receitas,revisao,avo@exemplo.invalid,Caderno de receitas,Fotografei a página do bolo para você preparar quando tiver vontade.,Pessoal
+E01,cartao-suspeito,teste,alertas@exemplo.invalid,Compra suspeita no cartão,Confirme agora se reconhece a transação para evitar novas cobranças.,Urgente
+E02,prazo-auditoria,teste,controle@exemplo.invalid,Prazo final para o relatório,Sem a entrega até as 14h de hoje o processo da equipe será encerrado.,Urgente
+E03,enchente,teste,defesa@exemplo.invalid,Subida da água na garagem,Retire o veículo nos próximos minutos antes que a via seja interditada.,Urgente
+E04,alergia,teste,restaurante@exemplo.invalid,Alerta de reação alimentar,Procure atendimento agora. O prato enviado continha princípio alergênico.,Urgente
+E05,material-recolhido,teste,escola@exemplo.invalid,Retirada de material obrigatório,O equipamento de proteção deve ser recolhido em dez minutos para liberar a sala.,Urgente
+E06,certidao,teste,arquivo@exemplo.invalid,Certidão para prestação de contas,A instituição disponibilizou comprovantes para enviar ao setor responsável na próxima quinzena.,Trabalho
+E07,selecao-estagio,teste,gupy@exemplo.invalid,Convite para entrevista,Escolha um horário disponível nesta semana para conversar com o recrutador.,Trabalho
+E08,encontro-fornecedor,teste,projetos@exemplo.invalid,Reunião com o fornecedor,As especificações do orçamento podem ser discutidas na segunda-feira.,Trabalho
+E09,incidente-resolvido,teste,infra@exemplo.invalid,Incidente de segurança resolvido,Registro retrospectivo do relatório da equipe. Nenhuma intervenção pendente.,Trabalho
+E10,reserva-institucional,teste,agenda@exemplo.invalid,Reserva de auditório universitário,A coordenação confirmou o espaço para a atividade curricular do mês seguinte.,Trabalho
+E11,assinatura,teste,revista@exemplo.invalid,Edição da revista disponível,A leitura deste mês já pode ser acessada no aplicativo da assinatura.,Pessoal
+E12,entrega,teste,pedidos@amazon.example,Seu pacote foi entregue,A caixa foi deixada na recepção conforme a preferência cadastrada.,Pessoal
+E13,festival,teste,amiga@exemplo.invalid,Convite para festival de rua,Teremos shows e bancas de comida durante o feriado.,Pessoal
+E14,marketing-hoje,teste,loja@exemplo.invalid,Desconto vence hoje,Se quiser comprar um sofá use o cupom. Ignorar a oferta não gera cobrança.,Pessoal
+E15,projeto-hobby,teste,amigo@exemplo.invalid,Projeto pessoal de marcenaria,Comprei ferramentas para o trabalho de montar uma estante no fim de semana.,Pessoal

@@ -21,6 +21,7 @@ class EmailRecord:
     source_key: str | None = None
     category_source: str = "automatic"
     decision_method: str = "unknown"
+    decision_detail: str = ""
 
 
 def load_emails_from_csv(path: str | Path) -> list[EmailRecord]:

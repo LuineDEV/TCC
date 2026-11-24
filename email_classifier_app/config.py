@@ -76,7 +76,6 @@ def get_database_settings() -> DatabaseSettings:
 
 
 def ensure_directories() -> None:
-    DATA_DIR.mkdir(exist_ok=True)
     MODEL_DIR.mkdir(exist_ok=True)
     CACHE_DIR.mkdir(exist_ok=True)
     GMAIL_PROFILE_DIR.mkdir(exist_ok=True)

@@ -66,6 +66,7 @@ class MySQLRepository:
             "source_key": "ALTER TABLE emails ADD COLUMN source_key VARCHAR(80)",
             "category_source": "ALTER TABLE emails ADD COLUMN category_source VARCHAR(20) DEFAULT 'legacy'",
             "decision_method": "ALTER TABLE emails ADD COLUMN decision_method VARCHAR(20) DEFAULT 'unknown'",
+            "decision_detail": "ALTER TABLE emails ADD COLUMN decision_detail VARCHAR(512) NOT NULL DEFAULT ''",
             "image_path": "ALTER TABLE emails ADD COLUMN image_path TEXT",
             "ocr_text": "ALTER TABLE emails ADD COLUMN ocr_text LONGTEXT",
             "capture_status": "ALTER TABLE emails ADD COLUMN capture_status VARCHAR(40) DEFAULT 'Somente texto'",
@@ -98,9 +99,10 @@ class MySQLRepository:
             """
             INSERT INTO emails (
                 sender, subject, body, received_at, category, confidence,
-                image_path, ocr_text, capture_status, ocr_status, source_key, category_source, decision_method
+                image_path, ocr_text, capture_status, ocr_status, source_key, category_source, decision_method,
+                decision_detail
             )
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
             """,
             (
                 record.sender,
@@ -116,6 +118,7 @@ class MySQLRepository:
                 record.source_key,
                 record.category_source,
                 getattr(record, "decision_method", "unknown"),
+                record.decision_detail,
             ),
         )
         self.connection.commit()
@@ -227,12 +230,16 @@ class MySQLRepository:
         cursor.close()
         return row
 
-    def update_classification(self, email_id: int, category: str, confidence: float, source: str = "automatic", decision_method: str = "unknown") -> None:
+    def update_classification(
+        self, email_id: int, category: str, confidence: float, source: str = "automatic",
+        decision_method: str = "unknown", decision_detail: str = "",
+    ) -> None:
         assert self.connection is not None
         cursor = self.connection.cursor()
         cursor.execute(
-            "UPDATE emails SET category = %s, confidence = %s, category_source = %s, decision_method = %s WHERE id = %s",
-            (category, confidence, source, decision_method, email_id),
+            "UPDATE emails SET category = %s, confidence = %s, category_source = %s, "
+            "decision_method = %s, decision_detail = %s WHERE id = %s",
+            (category, confidence, source, decision_method, decision_detail, email_id),
         )
         self.connection.commit()
         cursor.close()
@@ -286,6 +293,7 @@ class JsonCacheRepository:
                 email.setdefault("source_key", None)
                 email.setdefault("category_source", "legacy")
                 email.setdefault("decision_method", "unknown")
+                email.setdefault("decision_detail", "")
                 email.setdefault("image_path", None)
                 email.setdefault("ocr_text", "")
                 email.setdefault("capture_status", "Somente texto")
@@ -363,7 +371,10 @@ class JsonCacheRepository:
                     return dict(email)
         return None
 
-    def update_classification(self, email_id: int, category: str, confidence: float, source: str = "automatic", decision_method: str = "unknown") -> None:
+    def update_classification(
+        self, email_id: int, category: str, confidence: float, source: str = "automatic",
+        decision_method: str = "unknown", decision_detail: str = "",
+    ) -> None:
         with self._lock:
             for email in self.data["emails"]:
                 if int(email["id"]) == int(email_id):
@@ -371,6 +382,7 @@ class JsonCacheRepository:
                     email["confidence"] = confidence
                     email["category_source"] = source
                     email["decision_method"] = decision_method
+                    email["decision_detail"] = decision_detail
                     email["updated_at"] = datetime.now().isoformat(timespec="seconds")
                     break
             self._save()

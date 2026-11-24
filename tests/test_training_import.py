@@ -32,3 +32,22 @@ def test_failed_training_preserves_previous_pipeline(tmp_path):
     with pytest.raises(ValueError):
         classifier.train_from_records(records)
     assert classifier.pipeline is previous
+
+
+def test_interrupted_model_write_preserves_saved_model(tmp_path, monkeypatch):
+    classifier = EmailClassifier(tmp_path / "model.joblib")
+    records = [dict(subject=f"palavrax{i}", body="mensagem",
+                    category=("Trabalho", "Pessoal")[i % 2]) for i in range(6)]
+    classifier.train_from_records(records)
+    previous = classifier.pipeline
+
+    def interrupted_dump(payload, destination):
+        destination.write_bytes(b"interrupted")
+        raise OSError("disk write failed")
+
+    monkeypatch.setattr("email_classifier_app.model.joblib.dump", interrupted_dump)
+    with pytest.raises(OSError, match="disk write failed"):
+        classifier.train_from_records(records)
+    assert classifier.pipeline is previous
+    assert EmailClassifier(classifier.model_path).load()
+    assert list(tmp_path.iterdir()) == [classifier.model_path]

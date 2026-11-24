@@ -33,12 +33,13 @@ MUTED_TEXT = TEXT_MUTED
 
 
 class EmailClassifierApp(ctk.CTk):
-    def __init__(self) -> None:
+    def __init__(self, demo_dir: Path | None = None) -> None:
         super().__init__()
+        self.demo_dir = demo_dir
         ctk.set_appearance_mode("light")
         ctk.set_default_color_theme("blue")
 
-        self.title("Organizador de E-mails")
+        self.title("Mail Desk – Demonstração" if demo_dir is not None else "Organizador de E-mails")
         self.geometry("1320x820")
         self.minsize(980, 640)
         self.configure(fg_color=APP_BG)
@@ -153,8 +154,9 @@ class EmailClassifierApp(ctk.CTk):
         self.action_menu.add_command(label="Classificar previsões", command=self.classify_all)
         self.action_menu.add_command(label="Treinar com rótulos revisados", command=self.train_model)
         self.action_menu.add_separator()
-        self.action_menu.add_command(label="Importar CSV rotulado", command=self.import_csv)
-        self.action_menu.add_command(label="Importar do Gmail antigo…", command=self.import_gmail)
+        self.action_menu.add_command(label="Importar CSV", command=self.import_csv)
+        if self.demo_dir is None:
+            self.action_menu.add_command(label="Importar do Gmail antigo…", command=self.import_gmail)
         self.action_menu.add_separator()
         self.action_menu.add_command(label="Limpar mensagens…", command=self.clear_emails)
 
@@ -168,6 +170,9 @@ class EmailClassifierApp(ctk.CTk):
         for button in (self.action_button, self.imap_top_button, self.imap_button,
                        self.gmail_button, self.import_button):
             button.configure(state=state)
+        if self.demo_dir is not None:
+            self.imap_top_button.configure(state="disabled")
+            self.imap_button.configure(text="Importar CSV", command=self.import_csv, state=state)
         self.gmail_stop_button.configure(
             state="normal" if enabled and self.gmail_import_running else "disabled"
         )
@@ -476,12 +481,19 @@ class EmailClassifierApp(ctk.CTk):
 
     def _initialize_repository_and_model(self) -> None:
         try:
-            repository, status = create_repository()
+            if self.demo_dir is None:
+                repository, status = create_repository()
+                model_path = None
+            else:
+                repository = JsonCacheRepository(self.demo_dir / "emails.json", self.demo_dir / "capturas")
+                repository.connect()
+                status = "Modo demonstração"
+                model_path = self.demo_dir / "modelo.joblib"
             self.startup_events.put(("storage", (repository, status)))
             emails = repository.list_email_summaries()
             self.startup_events.put(("emails", emails))
             from .model import EmailClassifier
-            classifier = EmailClassifier()
+            classifier = EmailClassifier(model_path) if model_path is not None else EmailClassifier()
             classifier.ensure_model()
             self.startup_events.put(("model_ready", classifier))
         except Exception as exc:
@@ -540,6 +552,8 @@ class EmailClassifierApp(ctk.CTk):
             return "Carregando armazenamento…"
         if isinstance(self.repository, MySQLRepository):
             return "Banco local conectado"
+        if self.demo_dir is not None:
+            return "Modo demonstração"
         return "Armazenamento local"
 
     def _set_status(self, text: str, success: bool = True) -> None:
@@ -708,6 +722,7 @@ class EmailClassifierApp(ctk.CTk):
                 record.confidence = prediction.confidence
                 record.category_source = "automatic"
                 record.decision_method = prediction.source
+                record.decision_detail = prediction.detail
             elif record.category_source == "imported":
                 record.decision_method = "imported"
             self.repository.save_email(record)
@@ -725,7 +740,7 @@ class EmailClassifierApp(ctk.CTk):
         confirmed = messagebox.askyesno(
             "Limpar e-mails",
             f"Remover os {count} e-mails salvos localmente?\n\n"
-            "O modelo treinado sera mantido e continuara aprendendo nas proximas importacoes.",
+            "O modelo treinado será mantido. Para aprender com novas correções, use Treinar.",
             icon="warning",
         )
         if not confirmed:
@@ -801,10 +816,12 @@ class EmailClassifierApp(ctk.CTk):
                     prediction.category,
                     prediction.confidence,
                     decision_method=prediction.source,
+                    decision_detail=prediction.detail,
                 )
                 email["category"] = prediction.category
                 email["confidence"] = prediction.confidence
                 email["decision_method"] = prediction.source
+                email["decision_detail"] = prediction.detail
                 updated += 1
             self.repository.log("INFO", f"{updated} e-mails classificados")
             self.reload_emails()
@@ -1123,10 +1140,13 @@ class EmailClassifierApp(ctk.CTk):
             guidance = "Origem antiga desconhecida — revise antes de treinar"
         else:
             guidance = "Previsão automática — revise antes de treinar"
+        detail = str(email.get("decision_detail") or "") if method in ("model", "rule") else ""
+        if not detail and method in ("model", "rule"):
+            detail = "Motivo detalhado indisponível para esta previsão."
         self.detail_meta.configure(
             text=f"{email.get('sender') or 'Remetente não informado'}\n"
             f"{email.get('received_at') or 'Data não informada'}  |  {confidence_label}: {confidence_text}\n"
-            f"{source_label} · {guidance}"
+            f"{source_label} · {guidance}" + (f"\n{detail}" if detail else "")
         )
         image_path = str(email.get("image_path") or "")
         self.message_tab.configure(state="normal" if image_path else "disabled")
@@ -1209,6 +1229,7 @@ class EmailClassifierApp(ctk.CTk):
                 email["confidence"] = 1.0
                 email["category_source"] = "manual"
                 email["decision_method"] = "manual"
+                email["decision_detail"] = ""
                 break
         self.refresh_emails()
         updated = dict(self.selected_email)
