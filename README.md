@@ -4,7 +4,7 @@ Protótipo acadêmico para TCC com foco em classificação local de e-mails usan
 
 ## Entrega para avaliação
 
-A [versão de avaliação](https://github.com/LuineDEV/TCC/releases/tag/entrega-tcc-2026-11) reúne a demonstração portátil para Windows 64 bits, o vídeo, a monografia em PDF e os resultados do experimento piloto. O acesso exige uma conta com permissão no repositório privado.
+A [versão de avaliação](https://github.com/LuineDEV/TCC/releases/tag/entrega-tcc-2026-11) reúne a demonstração portátil para Windows 64 bits, o vídeo, a monografia em PDF e os resultados do experimento piloto. Os arquivos estão disponíveis sem login.
 
 1. Baixe `MailDesk_Demo_Windows_x64.zip`, extraia todo o conteúdo e abra `MailDesk.exe`. Mantenha a pasta `_internal` junto ao executável.
 2. Em **Ações**, clique em **Carregar exemplos**. Depois, use **Importar CSV** e escolha `demonstracao_sem_rotulo.csv`, incluído com o executável.
